@@ -1,0 +1,20 @@
+html,
+body{
+	background: url("../images/bg-matchmaker-1.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+.heading {
+	margin-top: 30px;
+}
+
+.h1{
+	font-size: 50px;
+	color: red;
+}
+
+.h2{
+	font-size: 24px;
+	margin: 10px 0px;
+}
