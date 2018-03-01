@@ -1,31 +1,41 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Match Maker - Survey</title>
-	>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">  
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <style>
+        body{
+            background-image: url("/images/bg-matchmaker-2.jpg");
+            background-size: cover;
+            /*background-color: #988d57*/
+            color: #fff;
+            margin: 20px;
+        }
+
+    </style>
 </head>
 <body> 
     <div class="container">
         <div class = "row">
-            <div class= "col-md-8 offset-md-4">
+            <div class= "col-md-9 offset-md-3">
                 <h2>Survey Questions
                  <a href="/"><button type="button">
                  <i class="fa fa-home fa-sm" aria-hidden="true"></i></button></a> 
                  </h2>
                 <hr>
-                <h3><strong>About You</strong></h3>
                 <h4>Name (Required)</h4>
                 <input type="text" name="name" id="name" class="form-control" required>
                 <h4>Link to Photo Image (Required)</h4>
                 <input type="text" name="photo" id="photo" class="form-control" required>
-            </div>    
+            </div> 
+            <hr/>   
         </div>    
         <hr>
         <div class = "row">
-            <div class= "col-md-8 offset-md-4">
+            <div class= "col-md-9 offset-md-3">
                 <div id="questions"></div>
                 <div>
                     <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
@@ -41,11 +51,140 @@
             <p><a href="/api/friends">API Friends List</a> | <a href="">GitHub Repo</a></p>
           </div>
         </footer>
-
     </div> 
 
- 
 
+    <div class="modal fade" id="resultsModal" tabindex="-1" role="dialog" 
+    aria-labelledby="resultsModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="resultsModalLabel">We found you a Friend!!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body results-body">
+                   <h3 id="friend-match-name"></h3>
+                    <img id="friend-match-image" src="" alt="">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ <script type="text/javascript">
+    var choices = [
+        "1 (Strongly Disagree)",
+        "2",
+        "3",
+        "4",
+        "5 (Strongly Agree)"
+    ];
+
+    var questions = [
+        "You are an Outdoor person?.",
+        "You love pets?.",
+        "You support President Trump?",
+        "You love sports?",
+        "You dress consciously?",
+        "You love playing indoor games?",
+        "You love to dance?",
+        "You enjoy socializing with people?",
+        "You like to work for charitable organizations?",
+        "You appreciate arts?"
+    ];
+
+    for (var i = 0; i < questions.length; i++) {
+        var questionDiv = $("<div class= 'qn'>");
+        questionDiv.attr('id', 'tableQn-' + i+1)
+        questionDiv.addClass("form-group");
+        
+        var questionText = $("<h4>");
+        questionText.text( "#" + (parseInt(i) + 1) + ".  " + questions[i]);
+    
+        
+        var questionSelect = $("<select class='form-control question'>");
+        questionSelect.attr("id", "q" + (parseInt(i) + 1));
+        
+        for (var j = 0; j < choices.length; j++) {
+            var option = $("<option>");
+            option.attr("value", (parseInt(j) + 1));
+            option.text(choices[j]);
+            questionSelect.append(option);
+        }
+
+        questionDiv.append(questionText).append(questionSelect);
+        $("#questions").append(questionDiv);
+
+    }
+
+
+    $("#submitBtn").on("click", function(event) {
+        event.preventDefault();
+        var capturedInputValues = [];
+
+        $(".question").each(function() {
+            capturedInputValues.push($(this).val());
+        });
+
+        function validateForm() {
+          var isValid = true;
+          $('.form-control').each(function() {
+                if($(this).val() === ''){
+                    isValid = false;
+                }
+            });
+
+          return isValid;
+        }
+
+        if(validateForm()){
+            var inputFriend = {
+                name: $("#name").val().trim(),
+                photo: $("#photo").val().trim(),
+                scores: capturedInputValues
+            };
+
+            var currentURL = window.location.origin;
+
+            $.post(currentURL + "/api/friends", inputFriend)
+            .done(function(data) {
+
+                console.log("Friend matched response", data);
+
+                if(Object.keys(data).length > 1) {
+                    $("#friend-match-name").text(data.name).append('<br>');
+                    $("#friend-match-image").attr("src", data.photo).css({"max-height":"300px", "width": "300px"});
+                    $("#resultsModal").modal('toggle');
+
+                } else {
+                    $("#friend-match-name").text(data.error);
+                }
+                
+                $(".question").each(function() {
+                    $(this).val("");
+                });
+
+            });
+        }else{
+
+            alert("Fill out the required fields!");
+        }
+    });
+
+</script>
+
+
+
+<!-- Popper -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+
+<!-- Latest compiled and minified Bootstrap JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity ="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 </body>
 </html>
 
