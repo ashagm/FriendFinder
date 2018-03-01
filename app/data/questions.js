@@ -10,3 +10,5 @@ var questions = [
   'You think that everyone’s views should be respected regardless of whether they are supported by facts or not.',
   'You feel more energetic after spending time with a group of people.'
 ];
+
+module.exports = questions;
